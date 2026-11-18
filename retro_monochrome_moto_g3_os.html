@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MOTO // RETRO OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --bar-color: #d9d9d9;
+            --bar-active: #ffffff;
+            --text-on-bg: #d9d9d9;
+            --text-on-bar: #000000;
+        }
+
+        body.light-mode {
+            --bg-color: #e5e5e5;
+            --bar-color: #171717;
+            --bar-active: #000000;
+            --text-on-bg: #171717;
+            --text-on-bar: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-on-bg);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Dein kantiger Figma-Balken-Stil */
+        .retro-bar {
+            background-color: var(--bar-color);
+            color: var(--text-on-bar);
+            height: 46px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 0px; /* Exakt kantig wie in deinem Figma-Design */
+            transition: transform 0.08s ease, background-color 0.15s;
+            cursor: pointer;
+        }
+
+        .retro-bar:active {
+            transform: scale(0.985);
+            background-color: var(--bar-active);
+        }
+
+        .retro-header-bar {
+            background-color: var(--bar-color);
+            color: var(--text-on-bar);
+            height: 46px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            margin-bottom: 36px;
+        }
+
+        /* Custom Slider für Now Playing & Volume */
+        input[type=range].retro-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type=range].retro-slider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: var(--bar-color);
+        }
+        input[type=range].retro-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: var(--bar-color);
+            margin-top: -5px;
+        }
+
+        /* Scrollbar verstecken */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col justify-between">
+
+    <!-- OBERE STATUSLEISTE (Exakt wie in deinem Figma: Links Akku %, Rechts Uhrzeit) -->
+    <header class="w-full px-5 pt-4 pb-2 flex justify-between items-center text-xs font-medium tracking-wide shrink-0">
+        <div id="battery-display">89%</div>
+        <div id="clock-display">11:07</div>
+    </header>
+
+    <!-- HAUPTCONTAINER (Maximalbreite wie ein Smartphone-Screen, zentriert) -->
+    <main class="flex-1 w-full max-w-md mx-auto px-5 pt-4 pb-2 flex flex-col overflow-hidden relative">
+
+        <!-- =========================================================
+             SCREEN 1: HOME MENU
+             ========================================================= -->
+        <section id="screen-home" class="w-full flex flex-col space-y-3.5">
+            <!-- Music Button -->
+            <button onclick="navigate('music-list')" class="retro-bar">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+            </button>
+
+            <!-- Games Button -->
+            <button onclick="navigate('games-list')" class="retro-bar">
+                <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24">
+                    <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+            </button>
+
+            <!-- Folder / Files Button -->
+            <button onclick="navigate('files-menu')" class="retro-bar">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                </svg>
+            </button>
+
+            <!-- Settings Button -->
+            <button onclick="navigate('settings')" class="retro-bar">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+            </button>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 2: MUSIC PLAYLISTS
+             ========================================================= -->
+        <section id="screen-music-list" class="hidden w-full h-full flex flex-col">
+            <!-- Header Icon Bar -->
+            <div class="retro-header-bar shrink-0">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+            </div>
+
+            <!-- Playlist Liste -->
+            <div id="playlists-container" class="flex-1 overflow-y-auto no-scrollbar space-y-3.5 pb-4">
+                <!-- Dynamisch befüllt -->
+            </div>
+
+            <!-- Add Playlist Button (Lädt lokale MP3s vom Moto G3 als neue Playlist) -->
+            <div class="pt-2 shrink-0">
+                <label class="retro-bar">
+                    <svg class="w-6 h-6 fill-current mr-3" viewBox="0 0 24 24">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    <span>Add Playlist</span>
+                    <input type="file" accept="audio/*" multiple class="hidden" onchange="createPlaylistFromFiles(event)">
+                </label>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 2B: NOW PLAYING (Cover + Controls)
+             ========================================================= -->
+        <section id="screen-now-playing" class="hidden w-full h-full flex flex-col justify-between pb-4">
+            <!-- Quadratisches Cover wie in deinem Figma-Entwurf -->
+            <div class="w-full aspect-square flex flex-col items-center justify-center p-6 text-center mb-4" style="background-color: var(--bar-color); color: var(--text-on-bar);">
+                <div id="np-track-title" class="text-base font-bold mb-1 line-clamp-2">[Cover]</div>
+                <div id="np-playlist-name" class="text-xs opacity-70">Playlist</div>
+            </div>
+
+            <!-- Fortschrittsleiste -->
+            <div class="w-full mb-4">
+                <input type="range" id="np-seek" min="0" max="100" value="0" class="retro-slider" oninput="seekAudio(this.value)">
+                <div class="flex justify-between text-[10px] opacity-75 mt-1">
+                    <span id="np-time-current">0:00</span>
+                    <span id="np-time-total">0:00</span>
+                </div>
+            </div>
+
+            <!-- Steuerung: Repeat | Prev | Play/Pause | Next | Shuffle -->
+            <div class="w-full flex items-center justify-between px-2 mb-4">
+                <!-- Links: Wiederholen (Repeat) -->
+                <button onclick="toggleRepeat()" id="btn-repeat" class="p-2 opacity-50 hover:opacity-100 transition" title="Wiederholen">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                        <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                    </svg>
+                </button>
+
+                <!-- Vorheriges Lied (Skip Previous) -->
+                <button onclick="prevTrack()" class="p-2 active:scale-90 transition" title="Vorheriges Lied">
+                    <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                    </svg>
+                </button>
+
+                <!-- Mitte: Großer Play/Pause Button -->
+                <button onclick="togglePlayPause()" class="p-2 active:scale-90 transition" title="Play / Pause">
+                    <svg id="np-icon-play" class="w-14 h-14 fill-current" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg id="np-icon-pause" class="w-14 h-14 fill-current hidden" viewBox="0 0 24 24">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+
+                <!-- Nächstes Lied (Skip Next) -->
+                <button onclick="nextTrack()" class="p-2 active:scale-90 transition" title="Nächstes Lied">
+                    <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                    </svg>
+                </button>
+
+                <!-- Rechts: Zufallswiedergabe (Shuffle aus Playlist) -->
+                <button onclick="toggleShuffle()" id="btn-shuffle" class="p-2 opacity-50 hover:opacity-100 transition" title="Zufällige Lieder">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                        <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 3: GAMES MENU
+             ========================================================= -->
+        <section id="screen-games-list" class="hidden w-full flex flex-col">
+            <div class="retro-header-bar">
+                <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24">
+                    <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+            </div>
+
+            <div class="space-y-3.5">
+                <button onclick="launchGame('paper')" class="retro-bar">Paper.io</button>
+                <button onclick="launchGame('snake')" class="retro-bar">Snake</button>
+                <button onclick="launchGame('blockblast')" class="retro-bar">Block blast</button>
+                <button onclick="launchGame('frog')" class="retro-bar">Frog</button>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 3B: AKTIVES SPIELFELD (Alle 4 Retro Games)
+             ========================================================= -->
+        <section id="screen-game-play" class="hidden w-full h-full flex flex-col justify-between pb-2">
+            <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider mb-2">
+                <span id="active-game-title">PAPER.IO</span>
+                <span id="active-game-score">SCORE: 0</span>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="canvas-wrapper" class="w-full flex-1 flex items-center justify-center relative border-2" style="border-color: var(--bar-color);">
+                <canvas id="retro-canvas" class="block touch-none"></canvas>
+
+                <!-- Game Over / Start Overlay -->
+                <div id="game-modal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center" style="background-color: var(--bg-color);">
+                    <div id="game-modal-title" class="text-lg font-bold mb-2">GAME OVER</div>
+                    <div id="game-modal-sub" class="text-xs opacity-75 mb-6">Wische oder nutze die Tasten</div>
+                    <button onclick="restartCurrentGame()" class="retro-bar justify-center max-w-[180px] font-bold">NEUSTART</button>
+                </div>
+            </div>
+
+            <!-- Block Blast Drag-and-Drop Dock (Nur bei Block Blast sichtbar) -->
+            <div id="blockblast-controls" class="hidden grid grid-cols-3 gap-2 mt-3 h-20">
+                <div id="bb-slot-0" class="border flex items-center justify-center touch-none cursor-grab active:cursor-grabbing" style="border-color: var(--bar-color);">
+                    <canvas id="bb-preview-0" width="68" height="68"></canvas>
+                </div>
+                <div id="bb-slot-1" class="border flex items-center justify-center touch-none cursor-grab active:cursor-grabbing" style="border-color: var(--bar-color);">
+                    <canvas id="bb-preview-1" width="68" height="68"></canvas>
+                </div>
+                <div id="bb-slot-2" class="border flex items-center justify-center touch-none cursor-grab active:cursor-grabbing" style="border-color: var(--bar-color);">
+                    <canvas id="bb-preview-2" width="68" height="68"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 4: FILES / FOLDER MENU
+             ========================================================= -->
+        <section id="screen-files-menu" class="hidden w-full flex flex-col">
+            <div class="retro-header-bar">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                </svg>
+            </div>
+
+            <div class="space-y-3.5">
+                <button onclick="openFileCategory('all')" class="retro-bar">[All Files]</button>
+                <button onclick="openFileCategory('audio')" class="retro-bar">[Audio]</button>
+                <button onclick="openFileCategory('video')" class="retro-bar">[Video]</button>
+                <button onclick="openFileCategory('others')" class="retro-bar">[others]</button>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 4B: DATEILISTE ANZEIGE
+             ========================================================= -->
+        <section id="screen-files-list" class="hidden w-full h-full flex flex-col">
+            <div class="retro-header-bar justify-between shrink-0">
+                <span id="file-cat-title" class="font-bold">[All Files]</span>
+                <label class="text-xs underline cursor-pointer">
+                    + Datei laden
+                    <input type="file" multiple class="hidden" onchange="uploadDeviceFiles(event)">
+                </label>
+            </div>
+            <div id="files-list-container" class="flex-1 overflow-y-auto no-scrollbar space-y-2.5 pb-4">
+                <!-- Dateien werden hier aufgelistet -->
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 5: SETTINGS
+             ========================================================= -->
+        <section id="screen-settings" class="hidden w-full flex flex-col">
+            <div class="retro-header-bar">
+                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+            </div>
+
+            <div class="space-y-3.5">
+                <!-- Dark / Light Mode Toggle -->
+                <button onclick="toggleTheme()" class="retro-bar justify-between">
+                    <span>Dark/Lightmode</span>
+                    <span id="theme-status" class="text-xs font-bold">DARK</span>
+                </button>
+
+                <!-- Volume Slider Balken -->
+                <div class="retro-bar justify-between space-x-4">
+                    <span>Volume</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.8" oninput="setVolume(this.value)" class="w-32 accent-black">
+                </div>
+
+                <!-- Exit to Android -->
+                <button onclick="exitToAndroid()" class="retro-bar">
+                    <span>Exit to Android</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- UNTERE NAVIGATION & MINI-PLAYER (Immer sichtbar, wenn ein Lied läuft) -->
+    <footer class="w-full max-w-md mx-auto px-5 pb-6 pt-2 flex items-center justify-between gap-3 shrink-0">
+        <!-- Zurück-Dreieck unten links -->
+        <button id="global-back-btn" onclick="goBack()" class="hidden p-2 active:scale-90 transition shrink-0" aria-label="Zurück">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M18 4L6 12l12 8V4z"/>
+            </svg>
+        </button>
+
+        <!-- Globaler Mini-Player Balken (erscheint außerhalb des Now-Playing-Screens, sobald ein Song geladen ist) -->
+        <div id="global-mini-player" class="hidden flex-1 h-10 px-3 flex items-center justify-between cursor-pointer" style="background-color: var(--bar-color); color: var(--text-on-bar);" onclick="navigate('now-playing')">
+            <span id="mini-track-title" class="text-xs font-bold truncate pr-2">Track 01</span>
+            <button onclick="event.stopPropagation(); togglePlayPause();" class="p-1 active:scale-90 transition shrink-0" aria-label="Play/Pause">
+                <svg id="mini-icon-play" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg id="mini-icon-pause" class="w-5 h-5 fill-current hidden" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Toast Benachrichtigung -->
+    <div id="retro-toast" class="hidden fixed top-12 left-1/2 -translate-x-1/2 px-4 py-2 text-xs font-bold z-50" style="background-color: var(--bar-color); color: var(--text-on-bar);">
+        Info
+    </div>
+
+    <audio id="audio-engine" preload="metadata"></audio>
+
+    <script>
+        /* =========================================================
+           1. SYSTEM STATUS (Uhrzeit, Akku, Navigation)
+           ========================================================= */
+        function updateSystemClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock-display').textContent = `${h}:${m}`;
+        }
+        setInterval(updateSystemClock, 1000);
+        updateSystemClock();
+
+        // Echte Akku-Anzeige auf dem Moto G3 auslesen (Fallback 89% wie in deinem Entwurf)
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                const updateBat = () => {
+                    document.getElementById('battery-display').textContent = `${Math.round(battery.level * 100)}%`;
+                };
+                updateBat();
+                battery.addEventListener('levelchange', updateBat);
+            });
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('retro-toast');
+            t.textContent = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2200);
+        }
+
+        let navHistory = ['home'];
+
+        function navigate(screenId) {
+            // Laufende Spiele stoppen, wenn Screen verlassen wird
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
+
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+
+            if (navHistory[navHistory.length - 1] !== screenId) {
+                navHistory.push(screenId);
+            }
+
+            // Zurück-Dreieck auf dem Home-Screen ausblenden (genau wie in deinem 1. Frame)
+            const backBtn = document.getElementById('global-back-btn');
+            if (screenId === 'home') {
+                backBtn.classList.add('hidden');
+            } else {
+                backBtn.classList.remove('hidden');
+            }
+            updateMiniPlayerVisibility();
+        }
+
+        function goBack() {
+            if (navHistory.length > 1) {
+                navHistory.pop();
+                const prev = navHistory[navHistory.length - 1];
+                if (gameInterval) {
+                    clearInterval(gameInterval);
+                    gameInterval = null;
+                }
+                document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+                document.getElementById(`screen-${prev}`).classList.remove('hidden');
+                if (prev === 'home') {
+                    document.getElementById('global-back-btn').classList.add('hidden');
+                }
+                updateMiniPlayerVisibility();
+            }
+        }
+
+        /* =========================================================
+           2. MUSIK & PLAYLISTS
+           ========================================================= */
+        let playlists = [
+            {
+                name: "Chill Synth",
+                tracks: [
+                    { title: "Neon Horizon", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+                    { title: "Midnight Drive", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
+                ]
+            },
+            {
+                name: "Retro Beats",
+                tracks: [
+                    { title: "8-Bit Sunset", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+                    { title: "Analog Tape", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" }
+                ]
+            }
+        ];
+
+        let deviceFiles = [
+            { name: "Neon Horizon.mp3", type: "audio", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { name: "Midnight Drive.mp3", type: "audio", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { name: "retro_clip.mp4", type: "video", url: "" },
+            { name: "system_notes.txt", type: "others", url: "" }
+        ];
+
+        let activePlaylistIdx = 0;
+        let activeTrackIdx = 0;
+        let isRepeat = false;
+        let isShuffle = false;
+        const audio = document.getElementById('audio-engine');
+        const npSeek = document.getElementById('np-seek');
+
+        function updateMiniPlayerVisibility() {
+            const miniBar = document.getElementById('global-mini-player');
+            const currentScreen = navHistory[navHistory.length - 1];
+            if (audio.src && currentScreen !== 'now-playing') {
+                miniBar.classList.remove('hidden');
+            } else {
+                miniBar.classList.add('hidden');
+            }
+        }
+
+        function renderPlaylists() {
+            const container = document.getElementById('playlists-container');
+            container.innerHTML = '';
+            playlists.forEach((pl, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'retro-bar justify-between';
+                btn.innerHTML = `
+                    <div class="flex items-center truncate">
+                        <svg class="w-5 h-5 fill-current mr-3 shrink-0" viewBox="0 0 24 24">
+                            <path d="M4 10h12v2H4zm0-4h12v2H4zm0 8h8v2H4zm10 0v6l5-3z"/>
+                        </svg>
+                        <span class="truncate">${pl.name}</span>
+                    </div>
+                    <span class="text-xs opacity-60 ml-2">${pl.tracks.length}</span>
+                `;
+                btn.onclick = () => {
+                    activePlaylistIdx = idx;
+                    activeTrackIdx = 0;
+                    navigate('now-playing');
+                    loadCurrentTrack(true);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function createPlaylistFromFiles(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+            const tracks = files.map(f => ({
+                title: f.name.replace(/\.[^/.]+$/, ""),
+                url: URL.createObjectURL(f)
+            }));
+            const plName = `Playlist ${playlists.length + 1}`;
+            playlists.push({ name: plName, tracks });
+            files.forEach(f => deviceFiles.push({ name: f.name, type: 'audio', url: URL.createObjectURL(f) }));
+            renderPlaylists();
+            showToast(`${plName} erstellt (${tracks.length} Songs)`);
+        }
+
+        function loadCurrentTrack(autoPlay = false) {
+            const pl = playlists[activePlaylistIdx];
+            if (!pl || !pl.tracks.length) return;
+            const track = pl.tracks[activeTrackIdx];
+
+            audio.src = track.url;
+            document.getElementById('np-track-title').textContent = track.title;
+            document.getElementById('np-playlist-name').textContent = pl.name;
+            document.getElementById('mini-track-title').textContent = track.title;
+            updateMiniPlayerVisibility();
+
+            if (autoPlay) {
+                audio.play().then(() => updatePlayPauseUI(true)).catch(() => updatePlayPauseUI(false));
+            } else {
+                updatePlayPauseUI(!audio.paused);
+            }
+        }
+
+        function updatePlayPauseUI(isPlaying) {
+            document.getElementById('np-icon-play').classList.toggle('hidden', isPlaying);
+            document.getElementById('np-icon-pause').classList.toggle('hidden', !isPlaying);
+            document.getElementById('mini-icon-play').classList.toggle('hidden', isPlaying);
+            document.getElementById('mini-icon-pause').classList.toggle('hidden', !isPlaying);
+        }
+
+        function togglePlayPause() {
+            if (!audio.src) {
+                loadCurrentTrack(true);
+                return;
+            }
+            if (audio.paused) {
+                audio.play().then(() => updatePlayPauseUI(true));
+            } else {
+                audio.pause();
+                updatePlayPauseUI(false);
+            }
+        }
+
+        function nextTrack() {
+            const pl = playlists[activePlaylistIdx];
+            if (!pl || !pl.tracks.length) return;
+
+            if (isShuffle && pl.tracks.length > 1) {
+                let nextIdx;
+                do {
+                    nextIdx = Math.floor(Math.random() * pl.tracks.length);
+                } while (nextIdx === activeTrackIdx);
+                activeTrackIdx = nextIdx;
+            } else {
+                activeTrackIdx = (activeTrackIdx + 1) % pl.tracks.length;
+            }
+            loadCurrentTrack(true);
+        }
+
+        function prevTrack() {
+            const pl = playlists[activePlaylistIdx];
+            if (!pl || !pl.tracks.length) return;
+
+            if (audio.currentTime > 3) {
+                audio.currentTime = 0;
+                return;
+            }
+            activeTrackIdx = (activeTrackIdx - 1 + pl.tracks.length) % pl.tracks.length;
+            loadCurrentTrack(true);
+        }
+
+        function toggleRepeat() {
+            isRepeat = !isRepeat;
+            audio.loop = isRepeat;
+            document.getElementById('btn-repeat').style.opacity = isRepeat ? '1' : '0.5';
+            showToast(isRepeat ? "Wiederholen: AN" : "Wiederholen: AUS");
+        }
+
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            document.getElementById('btn-shuffle').style.opacity = isShuffle ? '1' : '0.5';
+            showToast(isShuffle ? "Zufall (Playlist): AN" : "Zufall: AUS");
+        }
+
+        function formatTime(sec) {
+            if (isNaN(sec) || !isFinite(sec)) return "0:00";
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        function seekAudio(val) {
+            if (audio.duration) {
+                audio.currentTime = (val / 100) * audio.duration;
+            }
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                npSeek.value = (audio.currentTime / audio.duration) * 100;
+                document.getElementById('np-time-current').textContent = formatTime(audio.currentTime);
+                document.getElementById('np-time-total').textContent = formatTime(audio.duration);
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            if (!isRepeat) nextTrack();
+        });
+
+        /* =========================================================
+           3. DATEIMANAGER (ORDNER)
+           ========================================================= */
+        function openFileCategory(cat) {
+            const titles = { all: '[All Files]', audio: '[Audio]', video: '[Video]', others: '[others]' };
+            document.getElementById('file-cat-title').textContent = titles[cat] || '[All Files]';
+            const list = document.getElementById('files-list-container');
+            list.innerHTML = '';
+
+            const filtered = cat === 'all' ? deviceFiles : deviceFiles.filter(f => f.type === cat);
+            if (!filtered.length) {
+                list.innerHTML = `<div class="text-xs opacity-60 text-center py-8">Keine Dateien in dieser Kategorie</div>`;
+            } else {
+                filtered.forEach(file => {
+                    const row = document.createElement('button');
+                    row.className = 'retro-bar justify-between';
+                    row.innerHTML = `<span class="truncate pr-2">${file.name}</span><span class="text-[10px] uppercase opacity-60">${file.type}</span>`;
+                    row.onclick = () => {
+                        if (file.type === 'audio' && file.url) {
+                            playlists[0].tracks.unshift({ title: file.name, url: file.url });
+                            activePlaylistIdx = 0;
+                            activeTrackIdx = 0;
+                            navigate('now-playing');
+                            loadCurrentTrack(true);
+                        } else {
+                            showToast(`Datei: ${file.name}`);
+                        }
+                    };
+                    list.appendChild(row);
+                });
+            }
+            navigate('files-list');
+        }
+
+        function uploadDeviceFiles(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(f => {
+                let type = 'others';
+                if (f.type.startsWith('audio/')) type = 'audio';
+                else if (f.type.startsWith('video/')) type = 'video';
+                deviceFiles.push({ name: f.name, type, url: URL.createObjectURL(f) });
+            });
+            showToast(`${files.length} Datei(en) hinzugefügt`);
+            openFileCategory('all');
+        }
+
+        /* =========================================================
+           4. EINSTELLUNGEN
+           ========================================================= */
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('theme-status').textContent = isLight ? 'LIGHT' : 'DARK';
+        }
+
+        function setVolume(val) {
+            audio.volume = parseFloat(val);
+        }
+
+        function exitToAndroid() {
+            showToast("Kiosk-Modus: Home-Taste drücken zum Beenden");
+        }
+
+        /* =========================================================
+           5. RETRO ARCADE GAMES (Paper.io, Snake, Block Blast, Frog)
+           ========================================================= */
+        let gameInterval = null;
+        let currentGameType = null;
+        const canvas = document.getElementById('retro-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function getThemeColors() {
+            const isLight = document.body.classList.contains('light-mode');
+            return {
+                bg: isLight ? '#e5e5e5' : '#000000',
+                fg: isLight ? '#171717' : '#d9d9d9',
+                mid: isLight ? '#888888' : '#555555'
+            };
+        }
+
+        function resizeGameCanvas() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const size = Math.min(wrapper.clientWidth - 8, wrapper.clientHeight - 8, 340);
+            canvas.width = size;
+            canvas.height = size;
+        }
+
+        function launchGame(type) {
+            currentGameType = type;
+            document.getElementById('game-modal').classList.add('hidden');
+            document.getElementById('blockblast-controls').classList.toggle('hidden', type !== 'blockblast');
+            navigate('game-play');
+            setTimeout(() => {
+                resizeGameCanvas();
+                restartCurrentGame();
+            }, 30);
+        }
+
+        function showGameOver(scoreText) {
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
+            document.getElementById('game-modal-title').textContent = 'GAME OVER';
+            document.getElementById('game-modal-sub').textContent = scoreText;
+            document.getElementById('game-modal').classList.remove('hidden');
+        }
+
+        function restartCurrentGame() {
+            document.getElementById('game-modal').classList.add('hidden');
+            if (gameInterval) clearInterval(gameInterval);
+
+            if (currentGameType === 'paper') startPaperIO();
+            else if (currentGameType === 'snake') startSnake();
+            else if (currentGameType === 'blockblast') startBlockBlast();
+            else if (currentGameType === 'frog') startFrog();
+        }
+
+        // Touch & Keyboard Steuerung für alle Spiele
+        let gameDir = { x: 1, y: 0 };
+        let touchStartX = 0, touchStartY = 0;
+
+        canvas.addEventListener('touchstart', e => {
+            if (currentGameType === 'blockblast') return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            if (currentGameType === 'frog') {
+                handleFrogMove(0, -1);
+            }
+        }, { passive: true });
+
+        canvas.addEventListener('touchend', e => {
+            if (currentGameType === 'blockblast') return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) < 15 && Math.abs(dy) < 15) return;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                setDirection(dx > 0 ? 1 : -1, 0);
+            } else {
+                setDirection(0, dy > 0 ? 1 : -1);
+            }
+        }, { passive: true });
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'ArrowUp' || e.key === 'w') setDirection(0, -1);
+            if (e.key === 'ArrowDown' || e.key === 's') setDirection(0, 1);
+            if (e.key === 'ArrowLeft' || e.key === 'a') setDirection(-1, 0);
+            if (e.key === 'ArrowRight' || e.key === 'd') setDirection(1, 0);
+        });
+
+        function setDirection(x, y) {
+            if (currentGameType === 'frog') {
+                handleFrogMove(x, y);
+                return;
+            }
+            if (gameDir.x + x === 0 && gameDir.y + y === 0) return;
+            gameDir = { x, y };
+        }
+
+        /* --- GAME 1: PAPER.IO (Territory + Smarter Red Bot) --- */
+        function startPaperIO() {
+            document.getElementById('active-game-title').textContent = 'PAPER.IO';
+            const N = 28;
+            // 0 = leer, 1 = Spieler-Gebiet, 2 = Spieler-Spur, 3 = Bot-Gebiet, 4 = Bot-Spur
+            const grid = Array.from({ length: N }, () => Array(N).fill(0));
+
+            // Startgebiet Spieler (oben links)
+            for (let y = 4; y <= 7; y++) {
+                for (let x = 4; x <= 7; x++) grid[y][x] = 1;
+            }
+            let px = 6, py = 6;
+            gameDir = { x: 1, y: 0 };
+
+            // Startgebiet Roter Gegner (unten rechts)
+            for (let y = N - 8; y <= N - 5; y++) {
+                for (let x = N - 8; x <= N - 5; x++) grid[y][x] = 3;
+            }
+            let bot = { x: N - 7, y: N - 7, dx: -1, dy: 0, trailLen: 0, alive: true, respawnTimer: 0 };
+
+            function captureTerritory(ownerVal, trailVal) {
+                const visited = Array.from({ length: N }, () => Array(N).fill(false));
+                const queue = [];
+                for (let i = 0; i < N; i++) {
+                    if (grid[0][i] !== ownerVal && grid[0][i] !== trailVal) { queue.push([i, 0]); visited[0][i] = true; }
+                    if (grid[N - 1][i] !== ownerVal && grid[N - 1][i] !== trailVal) { queue.push([i, N - 1]); visited[N - 1][i] = true; }
+                    if (grid[i][0] !== ownerVal && grid[i][0] !== trailVal) { queue.push([0, i]); visited[i][0] = true; }
+                    if (grid[i][N - 1] !== ownerVal && grid[i][N - 1] !== trailVal) { queue.push([N - 1, i]); visited[i][N - 1] = true; }
+                }
+                while (queue.length) {
+                    const [cx, cy] = queue.shift();
+                    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+                        const nx = cx + dx, ny = cy + dy;
+                        if (nx >= 0 && nx < N && ny >= 0 && ny < N && !visited[ny][nx] && grid[ny][nx] !== ownerVal && grid[ny][nx] !== trailVal) {
+                            visited[ny][nx] = true;
+                            queue.push([nx, ny]);
+                        }
+                    });
+                }
+                for (let y = 0; y < N; y++) {
+                    for (let x = 0; x < N; x++) {
+                        if (grid[y][x] === trailVal || !visited[y][x]) grid[y][x] = ownerVal;
+                    }
+                }
+            }
+
+            function moveSmartBot() {
+                if (!bot.alive) {
+                    bot.respawnTimer--;
+                    if (bot.respawnTimer <= 0) {
+                        bot = { x: N - 6, y: N - 6, dx: -1, dy: 0, trailLen: 0, alive: true, respawnTimer: 0 };
+                        for (let y = N - 7; y <= N - 5; y++) {
+                            for (let x = N - 7; x <= N - 5; x++) grid[y][x] = 3;
+                        }
+                    }
+                    return;
+                }
+
+                const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => !(dx === -bot.dx && dy === -bot.dy));
+                let bestDir = [bot.dx, bot.dy];
+                let bestScore = -9999;
+
+                dirs.forEach(([dx, dy]) => {
+                    const nx = bot.x + dx;
+                    const ny = bot.y + dy;
+                    if (nx < 1 || nx >= N - 1 || ny < 1 || ny >= N - 1 || grid[ny][nx] === 4) {
+                        return; // Wand & eigene Spur vermeiden
+                    }
+                    let score = Math.random() * 10;
+                    // Wenn Spur lang wird (> 6 Felder), aktiv zurück ins eigene rote Gebiet (3) steuern
+                    if (bot.trailLen > 6 && grid[ny][nx] === 3) score += 80;
+                    else if (bot.trailLen <= 6 && grid[ny][nx] !== 3) score += 25;
+                    // Wenn Spieler-Spur (2) in der Nähe ist, angreifen!
+                    if (grid[ny][nx] === 2) score += 150;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestDir = [dx, dy];
+                    }
+                });
+
+                bot.dx = bestDir[0];
+                bot.dy = bestDir[1];
+                bot.x += bot.dx;
+                bot.y += bot.dy;
+
+                // Bot prallt an Wand oder eigene Spur -> Bot stirbt
+                if (bot.x < 0 || bot.x >= N || bot.y < 0 || bot.y >= N || grid[bot.y][bot.x] === 4) {
+                    for (let y = 0; y < N; y++) {
+                        for (let x = 0; x < N; x++) if (grid[y][x] === 4) grid[y][x] = 0;
+                    }
+                    bot.alive = false;
+                    bot.respawnTimer = 18;
+                    return;
+                }
+
+                // Bot schneidet Spieler-Spur -> Spieler verliert!
+                if (grid[bot.y][bot.x] === 2) {
+                    showGameOver("DER ROTE BOT HAT DEINE SPUR GEKREUZT!");
+                    return;
+                }
+
+                if (grid[bot.y][bot.x] !== 3) {
+                    grid[bot.y][bot.x] = 4;
+                    bot.trailLen++;
+                } else if (bot.trailLen > 0) {
+                    captureTerritory(3, 4);
+                    bot.trailLen = 0;
+                }
+            }
+
+            gameInterval = setInterval(() => {
+                px += gameDir.x;
+                py += gameDir.y;
+
+                // Kollision Spieler mit Wand oder eigener Spur
+                if (px < 0 || px >= N || py < 0 || py >= N || grid[py][px] === 2) {
+                    showGameOver(document.getElementById('active-game-score').textContent);
+                    return;
+                }
+
+                // Spieler schneidet rote Bot-Spur -> Bot eliminiert!
+                if (grid[py][px] === 4) {
+                    for (let y = 0; y < N; y++) {
+                        for (let x = 0; x < N; x++) if (grid[y][x] === 4 || grid[y][x] === 3) grid[y][x] = 0;
+                    }
+                    bot.alive = false;
+                    bot.respawnTimer = 25;
+                    showToast("ROTEN GEGNER ELIMINIERT!");
+                }
+
+                if (grid[py][px] !== 1) {
+                    grid[py][px] = 2;
+                } else {
+                    captureTerritory(1, 2);
+                }
+
+                moveSmartBot();
+
+                let owned = 0;
+                const colors = getThemeColors();
+                const cell = canvas.width / N;
+                ctx.fillStyle = colors.bg;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let y = 0; y < N; y++) {
+                    for (let x = 0; x < N; x++) {
+                        const v = grid[y][x];
+                        if (v === 1) {
+                            owned++;
+                            ctx.fillStyle = colors.fg;
+                            ctx.fillRect(x * cell, y * cell, cell, cell);
+                        } else if (v === 2) {
+                            ctx.fillStyle = colors.mid;
+                            ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+                        } else if (v === 3) {
+                            ctx.fillStyle = '#dc2626'; // Rotes Bot-Gebiet
+                            ctx.fillRect(x * cell, y * cell, cell, cell);
+                        } else if (v === 4) {
+                            ctx.fillStyle = '#f87171'; // Hellrote Bot-Spur
+                            ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+                        }
+                    }
+                }
+
+                // Spieler-Kopf zeichnen
+                ctx.fillStyle = colors.bg;
+                ctx.fillRect(px * cell + 2, py * cell + 2, cell - 4, cell - 4);
+
+                // Roter Gegner-Kopf zeichnen
+                if (bot.alive) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(bot.x * cell + 2, bot.y * cell + 2, cell - 4, cell - 4);
+                }
+
+                const pct = Math.round((owned / (N * N)) * 100);
+                document.getElementById('active-game-score').textContent = `AREA: ${pct}%`;
+            }, 130);
+        }
+
+        /* --- GAME 2: SNAKE (Deutlich größeres 32x32 Grid) --- */
+        function startSnake() {
+            document.getElementById('active-game-title').textContent = 'SNAKE';
+            const N = 32;
+            let snake = [{ x: 16, y: 16 }, { x: 15, y: 16 }, { x: 14, y: 16 }];
+            let food = { x: 24, y: 16 };
+            let score = 0;
+            gameDir = { x: 1, y: 0 };
+
+            gameInterval = setInterval(() => {
+                const head = { x: snake[0].x + gameDir.x, y: snake[0].y + gameDir.y };
+                if (head.x < 0 || head.x >= N || head.y < 0 || head.y >= N || snake.some(s => s.x === head.x && s.y === head.y)) {
+                    showGameOver(`SCORE: ${score}`);
+                    return;
+                }
+                snake.unshift(head);
+                if (head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    food = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) };
+                } else {
+                    snake.pop();
+                }
+
+                const colors = getThemeColors();
+                const cell = canvas.width / N;
+                ctx.fillStyle = colors.bg;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = colors.fg;
+                snake.forEach(s => ctx.fillRect(s.x * cell + 0.5, s.y * cell + 0.5, cell - 1, cell - 1));
+                ctx.fillRect(food.x * cell + 1.5, food.y * cell + 1.5, cell - 3, cell - 3);
+                document.getElementById('active-game-score').textContent = `SCORE: ${score}`;
+            }, 105);
+        }
+
+        /* --- GAME 3: BLOCK BLAST (Echtes Drag & Drop + Reihen & Spalten Clear) --- */
+        let bbBoard = [];
+        let bbPieces = [];
+        let bbScore = 0;
+        let bbDrag = null; // { idx, shape, hoverX, hoverY }
+
+        const BB_SHAPES = [
+            [[1, 1], [1, 1]],             // 2x2 Quadrat
+            [[1, 1, 1]],                  // 3er Horizontal
+            [[1], [1], [1]],              // 3er Vertikal
+            [[1, 1, 1, 1]],               // 4er Horizontal
+            [[1], [1], [1], [1]],         // 4er Vertikal
+            [[1, 0], [1, 0], [1, 1]],     // L-Block
+            [[0, 1], [0, 1], [1, 1]],     // Spiegel-L
+            [[1, 1, 1], [0, 1, 0]],       // T-Block
+            [[1, 1, 0], [0, 1, 1]],       // Z-Block
+            [[1]]                         // 1x1 Einzelblock
+        ];
+
+        function startBlockBlast() {
+            document.getElementById('active-game-title').textContent = 'BLOCK BLAST';
+            bbBoard = Array.from({ length: 8 }, () => Array(8).fill(0));
+            bbScore = 0;
+            bbDrag = null;
+            refillBlockPieces();
+            drawBlockBlast();
+        }
+
+        function refillBlockPieces() {
+            bbPieces = [
+                BB_SHAPES[Math.floor(Math.random() * BB_SHAPES.length)],
+                BB_SHAPES[Math.floor(Math.random() * BB_SHAPES.length)],
+                BB_SHAPES[Math.floor(Math.random() * BB_SHAPES.length)]
+            ];
+            renderBlockPreviews();
+            checkBlockBlastGameOver();
+        }
+
+        function renderBlockPreviews() {
+            const colors = getThemeColors();
+            for (let i = 0; i < 3; i++) {
+                const pCanvas = document.getElementById(`bb-preview-${i}`);
+                const pCtx = pCanvas.getContext('2d');
+                pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+
+                const shape = bbPieces[i];
+                if (!shape || (bbDrag && bbDrag.idx === i)) continue;
+
+                const rows = shape.length;
+                const cols = shape[0].length;
+                const blockSize = 13;
+                const offsetX = (pCanvas.width - cols * blockSize) / 2;
+                const offsetY = (pCanvas.height - rows * blockSize) / 2;
+
+                pCtx.fillStyle = colors.fg;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (shape[r][c]) {
+                            pCtx.fillRect(offsetX + c * blockSize + 1, offsetY + r * blockSize + 1, blockSize - 2, blockSize - 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        function canPlaceShapeAt(shape, gx, gy) {
+            if (gx < 0 || gy < 0 || gy + shape.length > 8 || gx + shape[0].length > 8) return false;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[0].length; c++) {
+                    if (shape[r][c] && bbBoard[gy + r][gx + c]) return false;
+                }
+            }
+            return true;
+        }
+
+        function checkBlockBlastGameOver() {
+            const remaining = bbPieces.filter(p => p !== null);
+            if (!remaining.length) return;
+            let anyMovePossible = false;
+            remaining.forEach(shape => {
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        if (canPlaceShapeAt(shape, x, y)) anyMovePossible = true;
+                    }
+                }
+            });
+            if (!anyMovePossible) {
+                showGameOver(`KEIN ZUG MEHR! SCORE: ${bbScore}`);
+            }
+        }
+
+        // Drag & Drop Events für die 3 Block-Slots einrichten
+        [0, 1, 2].forEach(slotIdx => {
+            const slotEl = document.getElementById(`bb-slot-${slotIdx}`);
+            const startDrag = (clientX, clientY) => {
+                if (currentGameType !== 'blockblast' || !bbPieces[slotIdx]) return;
+                bbDrag = { idx: slotIdx, shape: bbPieces[slotIdx], hoverX: -1, hoverY: -1 };
+                renderBlockPreviews();
+                updateDragPosition(clientX, clientY);
+            };
+            slotEl.addEventListener('touchstart', e => {
+                e.preventDefault();
+                startDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+            slotEl.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+        });
+
+        function updateDragPosition(clientX, clientY) {
+            if (!bbDrag) return;
+            const rect = canvas.getBoundingClientRect();
+            const cell = rect.width / 8;
+            // Finger etwas nach oben versetzen, damit man den Block unter dem Daumen sieht
+            const relX = clientX - rect.left;
+            const relY = (clientY - rect.top) - cell * 1.4;
+
+            const shape = bbDrag.shape;
+            const gx = Math.round(relX / cell - shape[0].length / 2);
+            const gy = Math.round(relY / cell - shape.length / 2);
+
+            bbDrag.hoverX = gx;
+            bbDrag.hoverY = gy;
+            drawBlockBlast();
+        }
+
+        function endDrag() {
+            if (!bbDrag) return;
+            const { idx, shape, hoverX, hoverY } = bbDrag;
+            if (canPlaceShapeAt(shape, hoverX, hoverY)) {
+                let placedCells = 0;
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[0].length; c++) {
+                        if (shape[r][c]) {
+                            bbBoard[hoverY + r][hoverX + c] = 1;
+                            placedCells++;
+                        }
+                    }
+                }
+                bbScore += placedCells * 5;
+                bbPieces[idx] = null;
+
+                // Gleichzeitig prüfen: Volle Reihen (waagerecht) UND volle Spalten (senkrecht)!
+                const fullRows = [];
+                const fullCols = [];
+                for (let r = 0; r < 8; r++) {
+                    if (bbBoard[r].every(v => v === 1)) fullRows.push(r);
+                }
+                for (let c = 0; c < 8; c++) {
+                    let colFull = true;
+                    for (let r = 0; r < 8; r++) if (bbBoard[r][c] === 0) colFull = false;
+                    if (colFull) fullCols.push(c);
+                }
+
+                fullRows.forEach(r => bbBoard[r].fill(0));
+                fullCols.forEach(c => {
+                    for (let r = 0; r < 8; r++) bbBoard[r][c] = 0;
+                });
+
+                const clearedLines = fullRows.length + fullCols.length;
+                if (clearedLines > 0) {
+                    bbScore += clearedLines * 80;
+                }
+            }
+
+            bbDrag = null;
+            if (bbPieces.every(p => p === null)) {
+                refillBlockPieces();
+            } else {
+                renderBlockPreviews();
+                checkBlockBlastGameOver();
+            }
+            drawBlockBlast();
+        }
+
+        window.addEventListener('touchmove', e => {
+            if (bbDrag) updateDragPosition(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener('mousemove', e => {
+            if (bbDrag) updateDragPosition(e.clientX, e.clientY);
+        });
+        window.addEventListener('touchend', endDrag);
+        window.addEventListener('mouseup', endDrag);
+
+        function drawBlockBlast() {
+            const colors = getThemeColors();
+            const cell = canvas.width / 8;
+            ctx.fillStyle = colors.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 8x8 Raster & gesetzte Blöcke zeichnen
+            for (let y = 0; y < 8; y++) {
+                for (let x = 0; x < 8; x++) {
+                    ctx.strokeStyle = colors.mid;
+                    ctx.strokeRect(x * cell, y * cell, cell, cell);
+                    if (bbBoard[y][x]) {
+                        ctx.fillStyle = colors.fg;
+                        ctx.fillRect(x * cell + 2, y * cell + 2, cell - 4, cell - 4);
+                    }
+                }
+            }
+
+            // Live-Vorschau beim Reinziehen zeichnen
+            if (bbDrag) {
+                const { shape, hoverX, hoverY } = bbDrag;
+                const valid = canPlaceShapeAt(shape, hoverX, hoverY);
+                ctx.fillStyle = valid ? colors.mid : '#dc2626';
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[0].length; c++) {
+                        if (shape[r][c]) {
+                            const gx = hoverX + c;
+                            const gy = hoverY + r;
+                            if (gx >= 0 && gx < 8 && gy >= 0 && gy < 8) {
+                                ctx.fillRect(gx * cell + 2, gy * cell + 2, cell - 4, cell - 4);
+                            }
+                        }
+                    }
+                }
+            }
+
+            document.getElementById('active-game-score').textContent = `SCORE: ${bbScore}`;
+        }
+
+        /* --- GAME 4: FROG (Mit aufsteigenden Levels!) --- */
+        let frogPos = { x: 5, y: 10 };
+        let frogScore = 0;
+        let frogLevel = 1;
+        let frogCars = [];
+
+        function setupFrogLevel(lvl) {
+            frogPos = { x: 5, y: 10 };
+            frogCars = [];
+            const speedMult = 1 + (lvl - 1) * 0.25;
+            // Je höher das Level, desto mehr befahrene Spuren & höhere Geschwindigkeit
+            const activeLanes = lvl === 1 ? [2, 4, 6, 8] : (lvl === 2 ? [2, 3, 5, 6, 8] : [1, 2, 3, 5, 6, 7, 8, 9]);
+
+            activeLanes.forEach((laneY, idx) => {
+                const dir = idx % 2 === 0 ? 1 : -1;
+                const baseSpeed = (0.11 + (idx % 3) * 0.03) * speedMult * dir;
+                frogCars.push({ y: laneY, x: (idx * 3) % 10, speed: baseSpeed });
+                if (lvl >= 2 && idx % 2 === 0) {
+                    frogCars.push({ y: laneY, x: ((idx * 3) + 5) % 10, speed: baseSpeed });
+                }
+            });
+        }
+
+        function startFrog() {
+            document.getElementById('active-game-title').textContent = 'FROG';
+            frogScore = 0;
+            frogLevel = 1;
+            setupFrogLevel(frogLevel);
+
+            gameInterval = setInterval(() => {
+                frogCars.forEach(c => {
+                    c.x += c.speed;
+                    if (c.x > 11) c.x = -2;
+                    if (c.x < -2) c.x = 11;
+                    if (Math.round(c.y) === frogPos.y && Math.abs(c.x - frogPos.x) < 1.05) {
+                        showGameOver(`LEVEL ${frogLevel} | SCORE: ${frogScore}`);
+                    }
+                });
+                drawFrog();
+            }, 50);
+        }
+
+        function handleFrogMove(dx, dy) {
+            frogPos.x = Math.max(0, Math.min(10, frogPos.x + dx));
+            frogPos.y = Math.max(0, Math.min(10, frogPos.y + dy));
+            if (frogPos.y === 0) {
+                frogScore += 100 * frogLevel;
+                frogLevel++;
+                showToast(`LEVEL ${frogLevel}!`);
+                setupFrogLevel(frogLevel);
+            }
+            drawFrog();
+        }
+
+        function drawFrog() {
+            const colors = getThemeColors();
+            const cell = canvas.width / 11;
+            ctx.fillStyle = colors.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Zielzone oben leicht markieren
+            ctx.fillStyle = colors.mid;
+            ctx.globalAlpha = 0.25;
+            ctx.fillRect(0, 0, canvas.width, cell);
+            ctx.globalAlpha = 1.0;
+
+            // Autos zeichnen
+            ctx.fillStyle = colors.mid;
+            frogCars.forEach(c => ctx.fillRect(c.x * cell, c.y * cell + 3, cell * 1.7, cell - 6));
+
+            // Frosch zeichnen
+            ctx.fillStyle = colors.fg;
+            ctx.fillRect(frogPos.x * cell + 2, frogPos.y * cell + 2, cell - 4, cell - 4);
+            document.getElementById('active-game-score').textContent = `LVL ${frogLevel} | ${frogScore}`;
+        }
+
+        // Initialisierung beim Start
+        renderPlaylists();
+    </script>
+</body>
+</html>
